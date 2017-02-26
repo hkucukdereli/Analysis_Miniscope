@@ -40,13 +40,13 @@ def getBouts(mice, dataList, eventStart, eventEnd, baseEvent, base, behType, tri
                     if base < 0:
                         slicePre = data.loc[baseT+base:baseT].values - basedFF
                         slicePost = data.loc[startT:endT].values - basedFF
-                        slice = np.concatenate((slicePre, slicePost), axis=0)
-                        slicedData['Fluoro'] = slice
-                        slicedData['New_Time'] = np.linspace(base,((len(slice)-1)*fs)+base,len(slice))
+                        dataSlice = np.concatenate((slicePre, slicePost), axis=0)
+                        slicedData['Fluoro'] = dataSlice
+                        slicedData['New_Time'] = np.linspace(base,((len(dataSlice)-1)*fs)+base,len(dataSlice))
                     elif base > 0:
-                        slice = data.loc[startT+base:endT+0.0001].values - basedFF
-                        slicedData['Fluoro'] = slice
-                        slicedData['New_Time'] = np.linspace(base,((len(slice)-1)*fs)+base,len(slice))
+                        dataSlice = data.loc[startT+base:endT+0.0001].values - basedFF
+                        slicedData['Fluoro'] = dataSlice
+                        slicedData['New_Time'] = np.linspace(base,((len(dataSlice)-1)*fs)+base,len(dataSlice))
 
                     slicedData['Cell'] = col
                     slicedData['Event'] = j+1

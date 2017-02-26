@@ -60,7 +60,7 @@ def plotMean(mean, sem, time, eventType):
     #plt.tight_layout()
     return fig, ax
 
-def plotHeat(eventsData, eventType, base, duration, trials, fs):
+def plotHeat(eventsData, eventType, base, duration, trials, fs, vmin, vmax):
     heatData = eventsData.pivot_table(index=['Event'], columns='New_Time', aggfunc=np.mean)
     heatData['Fluoro'].columns
     heatData.mean(axis=1)
@@ -78,7 +78,7 @@ def plotHeat(eventsData, eventType, base, duration, trials, fs):
     line = 1.5
     colors = ('#BCBEC0', '#0070C0', '#BCBEC0', '#0070C0')
 
-    plt.pcolor(heatData, cmap=plt.cm.PiYG_r, linewidth=line, linestyle='solid')
+    plt.pcolor(heatData, cmap=plt.cm.PiYG_r, linewidth=line, linestyle='solid', vmin=vmin, vmax=vmax)
     ax.invert_yaxis()
     plt.colorbar()
 

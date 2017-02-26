@@ -65,9 +65,21 @@ def smoothData(mice, dataList, window=1):
         data = dataList[mus]
 
         smoothData = data.rolling(window=window).mean()
-        smoothList[mus] = smoothData
+        smoothList[mus] = smoothData.dropna()
 
     return smoothList
+
+def normData(mice, dataList):
+    """
+    """
+    normList = {}
+    for mus, sess in mice:
+        data = dataList[mus]
+
+        normData = (data - data.min()) / (data.max() - data.min())
+        normList[mus] = normData
+
+    return normList
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
