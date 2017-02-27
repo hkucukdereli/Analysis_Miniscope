@@ -19,6 +19,8 @@ def getBouts(mice, dataList, eventStart, eventEnd, baseEvent, base, behType, tri
             baseEvent[mus].loc[i] = nearest3
 
         fs = dataList[mus].index[1] - dataList[mus].index[0]
+        newTime = np.arange(base, 10000, fs)
+
         for col in dataList[mus].columns:
             if not col == 'Time (s)':
                 data = dataList[mus][col]
@@ -42,14 +44,15 @@ def getBouts(mice, dataList, eventStart, eventEnd, baseEvent, base, behType, tri
                         slicePost = data.loc[startT:endT].values - basedFF
                         dataSlice = np.concatenate((slicePre, slicePost), axis=0)
                         slicedData['Fluoro'] = dataSlice
-                        slicedData['New_Time'] = np.linspace(base,((len(dataSlice)-1)*fs)+base,len(dataSlice))
+                        slicedData['New_Time'] = newTime[0:len(dataSlice)]
+                        #slicedData['New_Time'] = np.linspace(base,((len(dataSlice)-1)*fs)+base,len(dataSlice))
                     elif base > 0:
                         dataSlice = data.loc[startT+base:endT+0.0001].values - basedFF
                         slicedData['Fluoro'] = dataSlice
                         slicedData['New_Time'] = np.linspace(base,((len(dataSlice)-1)*fs)+base,len(dataSlice))
 
                     slicedData['Cell'] = col
-                    slicedData['Event'] = j+1
+                    slicedData['Event'] = j
                     eventsData = eventsData.append(slicedData)
 
     print "\n", len(mice), " mice were loaded."
@@ -188,4 +191,6 @@ if __name__ == "__main__":
 
     #markBoutsDouble(mice, dataList, eventStart, eventEnd, baseEvent, base=base, behType=behType, trials=trials, dff=True, baselining=True)
     eventType = ['Eat_Start', 'Eat_End']
-    markBouts(mice, dataList, eventType=eventType, behType=behType, trials=trials, base=base, dff=True, baseline=False)
+    #markBouts(mice, dataList, eventType=eventType, behType=behType, trials=trials, base=base, dff=True, baseline=False)
+
+    boutsData =  getBouts(mice, dataList, eventStart, eventEnd, baseEvent, base, behType, trials, baselining=False)

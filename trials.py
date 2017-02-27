@@ -21,7 +21,7 @@ def markTrials(mice, dataList, base, duration, eventType, behType, trials, basel
             eventTimes = np.append(eventTimes, nearest)
 
         fs = dataList[mus].index[1] - dataList[mus].index[0]
-        newTime = np.linspace(base, 10000*fs,10000)
+        newTime = np.arange(base, 10000, fs)
         for col in dataList[mus].columns:
             if not col == 'Time (s)':
                 data = dataList[mus][col]
@@ -32,10 +32,13 @@ def markTrials(mice, dataList, base, duration, eventType, behType, trials, basel
                         basedFF = data.loc[event+base+0.0001:event+0.0001].mean()
                     elif not baselining:
                         basedFF = 0
-                    slicedData['Fluoro'] = data.loc[event+base+0.0001:event+duration+0.0001].values - basedFF
+
+                    dataSlice = data.loc[event+base+0.0001:event+duration+0.0001].values - basedFF
+                    slicedData['Fluoro'] = dataSlice
                     slicedData['Cell'] = col
                     slicedData['Event'] = i+1
-                    slicedData['New_Time'] = np.round(np.linspace(base,((len(slicedData['Fluoro'])-1)*fs)+base,len(slicedData['Fluoro'])), 2)
+                    slicedData['New_Time'] = newTime[0:len(dataSlice)]
+                    #slicedData['New_Time'] = np.round(np.linspace(base,((len(slicedData['Fluoro'])-1)*fs)+base,len(slicedData['Fluoro'])), 2)
                     ##print np.linspace(base,((len(slicedData['Fluoro'])-1)*fs)+base,len(slicedData['Fluoro']))
                     ##print np.round(np.linspace(base,((len(slicedData['Fluoro'])-1)*fs)+base,len(slicedData['Fluoro'])), 2)
                     #np.arange(+base,duration,fs)
