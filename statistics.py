@@ -11,49 +11,6 @@ def stdCalc(mice, dataList):
         stdList = stdList.append(pd.DataFrame({'Std':dataList[mus].std().values}, index=dataList[mus].columns))
     return stdList
 
-def getBoutMeans(mice, boutsData, behType, trials, base, fs):
-    # Get the cell names
-    cellNames = boutsData['Cell'].drop_duplicates().values
-
-    # Calculate the bout and baseline means
-    boutMeans = pd.DataFrame()
-    for i, cell in enumerate(cellNames):
-        boutDF = pd.DataFrame()
-
-        # Calculate mean, max and auc for baseline
-        baseline = boutsData.reset_index(drop=True).pivot_table(index=['Event'], columns=['Cell', 'New_Time'], values='Fluoro')[cell].T.loc[base:0.00]
-        baselineMean = baseline.mean(axis=0).values
-        boutDF['Baseline_Mean'] = baselineMean
-
-        baselineMax = baseline.max().values
-        boutDF['Baseline_Max'] = baselineMax
-
-        baselineAuc = np.array([])
-        for j in np.arange(trials[0], trials[1]+1):
-            baselineAucVal = np.trapz(baseline[j], dx=fs)
-            baselineAuc = np.append(baselineAuc, baselineAucVal)
-        boutDF['Baseline_Auc'] = baselineAuc
-
-        # Calculate mean, max and auc for bout
-        bout = boutsData.reset_index(drop=True).pivot_table(index=['Event'], columns=['Cell', 'New_Time'], values='Fluoro')[cell].T.loc[0.00:]
-        boutMean = bout.mean(axis=0).values
-        boutDF['Bout_Mean'] = boutMean
-
-        boutMax = bout.max().values
-        boutDF['Bout_Max'] = boutMax
-
-        boutAuc = np.array([])
-        for i in np.arange(trials[0], trials[1]+1):
-            boutAucVal = np.trapz(bout[i].dropna(), dx=fs)
-            boutAuc = np.append(boutAuc, boutAucVal)
-        boutDF['Bout_Auc'] = boutAuc
-
-        boutDF['Cell'] = cell
-        boutDF['Event'] = np.arange(trials[0], trials[1]+1)
-        boutMeans = boutMeans.append(boutDF)
-
-    return boutMeans
-
 def getStats(boutMeans, choice, parameter, p_val=0.05):
     """
         'Mean', 'Max', 'Auc'
@@ -63,8 +20,10 @@ def getStats(boutMeans, choice, parameter, p_val=0.05):
     for cell in cellNames:
         x = boutMeans.pivot_table(index='Event', columns='Cell', values='Baseline_'+str(parameter))[cell]
         y = boutMeans.pivot_table(index='Event', columns='Cell', values='Bout_'+str(parameter))[cell]
+
         T_wilc, p_wilc = stat.wilcoxon(x, y)
         T_rank, p_rank = stat.ranksums(x, y)
+
         if y.mean() > x.mean():
             PInd = 1 * np.absolute((y.mean() - x.mean()) / (y.mean() + x.mean()))
         elif y.mean() < x.mean():
@@ -124,3 +83,99 @@ def getStats(boutMeans, choice, parameter, p_val=0.05):
     stats.set_index('Cell', drop=True, inplace=True)
 
     return stats, percentages
+
+def getBoutMeans(mice, boutsData, behType, trials, base, fs):
+    # Get the cell names
+    cellNames = boutsData['Cell'].drop_duplicates().values
+
+    # Calculate the bout and baseline means
+    boutMeans = pd.DataFrame()
+    for i, cell in enumerate(cellNames):
+        boutDF = pd.DataFrame()
+
+        # Calculate mean, max and auc for baseline
+        baseline = boutsData.reset_index(drop=True).pivot_table(index=['Event'], columns=['Cell', 'New_Time'], values='Fluoro')[cell].T.loc[base:0.00]
+        baselineMean = baseline.mean(axis=0).values
+        boutDF['Baseline_Mean'] = baselineMean
+
+        baselineMax = baseline.max().values
+        boutDF['Baseline_Max'] = baselineMax
+
+        baselineAuc = np.array([])
+        for j in np.arange(trials[0], trials[1]+1):
+            baselineAucVal = np.trapz(baseline[j], dx=fs)
+            baselineAuc = np.append(baselineAuc, baselineAucVal)
+        boutDF['Baseline_Auc'] = baselineAuc
+
+        # Calculate mean, max and auc for bout
+        bout = boutsData.reset_index(drop=True).pivot_table(index=['Event'], columns=['Cell', 'New_Time'], values='Fluoro')[cell].T.loc[0.00:]
+        boutMean = bout.mean(axis=0).values
+        boutDF['Bout_Mean'] = boutMean
+
+        boutMax = bout.max().values
+        boutDF['Bout_Max'] = boutMax
+
+        boutAuc = np.array([])
+        for i in np.arange(trials[0], trials[1]+1):
+            boutAucVal = np.trapz(bout[i].dropna(), dx=fs)
+            boutAuc = np.append(boutAuc, boutAucVal)
+        boutDF['Bout_Auc'] = boutAuc
+
+        boutDF['Cell'] = cell
+        boutDF['Event'] = np.arange(trials[0], trials[1]+1)
+        boutMeans = boutMeans.append(boutDF)
+
+    return boutMeans
+
+def getBoutMeans_(mice, boutsData, behType, trials, base, fs):
+    """
+        Use this one for variable length baseline.
+    """
+    # Get the cell names
+    cellNames = boutsData['Cell'].drop_duplicates().values
+
+    # Calculate the bout and baseline means
+    boutMeans = pd.DataFrame()
+    for i, cell in enumerate(cellNames):
+        boutDF = pd.DataFrame()
+
+        # Calculate mean, max and auc for the baseline
+        # Calculate mean
+        baseInd = boutsData.reset_index(drop=True).pivot_table(index=['Event'], columns=['Cell', 'New_Time'], values='Fluoro')[cell].T.index[0]
+        baseline = boutsData.reset_index(drop=True).pivot_table(index=['Event'], columns=['Cell', 'New_Time'], values='Fluoro')[cell].T.loc[baseInd:0.00]
+        baselineMean = baseline.mean(axis=0).values
+        boutDF['Baseline_Mean'] = baselineMean
+
+        # Calculate max
+        baselineMax = baseline.max().values
+        boutDF['Baseline_Max'] = baselineMax
+
+        # Calculate auc
+        baselineAuc = np.array([])
+        for j in np.arange(trials[0], trials[1]+1):
+            baselineAucVal = np.trapz(baseline[j].dropna(), dx=fs)
+            baselineAuc = np.append(baselineAuc, baselineAucVal)
+        boutDF['Baseline_Auc'] = baselineAuc
+
+        # Calculate mean, max and auc for the bout
+        # Calculate mean
+        bout = boutsData.reset_index(drop=True).pivot_table(index=['Event'], columns=['Cell', 'New_Time'], values='Fluoro')[cell].T.loc[0.00:]
+        boutMean = bout.mean(axis=0).values
+        boutDF['Bout_Mean'] = boutMean
+
+        # Calculate max
+        boutMax = bout.max().values
+        boutDF['Bout_Max'] = boutMax
+
+        # Calculate auc
+        boutAuc = np.array([])
+        for i in np.arange(trials[0], trials[1]+1):
+            boutAucVal = np.trapz(bout[i].dropna(), dx=fs)
+            boutAuc = np.append(boutAuc, boutAucVal)
+        boutDF['Bout_Auc'] = boutAuc
+
+        boutDF['Cell'] = cell
+        boutDF['Event'] = np.arange(trials[0], trials[1]+1)
+        boutMeans = boutMeans.append(boutDF)
+
+    return boutMeans
