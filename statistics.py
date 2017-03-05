@@ -85,6 +85,9 @@ def getStats(boutMeans, choice, parameter, p_val=0.05):
     return stats, percentages
 
 def getBoutMeans(mice, boutsData, behType, trials, base, fs):
+    """
+        Use this one for fixed length baseline.
+    """
     # Get the cell names
     cellNames = boutsData['Cell'].drop_duplicates().values
 
@@ -179,3 +182,20 @@ def getBoutMeans_(mice, boutsData, behType, trials, base, fs):
         boutMeans = boutMeans.append(boutDF)
 
     return boutMeans
+
+def baselineBouts(boutMeans):
+    cellNames = boutMeans['Cell'].drop_duplicates()
+    boutDF = boutMeans
+    for cell in cellNames:
+        baseMean = boutMeans[boutMeans['Cell'] == cell]['Baseline_Mean'].mean()
+        baseMax = boutMeans[boutMeans['Cell'] == cell]['Baseline_Max'].mean()
+        baseAuc = boutMeans[boutMeans['Cell'] == cell]['Baseline_Auc'].mean()
+
+        #boutDF[boutDF['Cell'] == cell]['Baseline_Mean'] = boutDF[boutDF['Cell'] == cell]['Baseline_Mean'] - base
+        #boutDF[boutDF['Cell'] == cell]['Bout_Mean'] = boutDF[boutDF['Cell'] == cell]['Bout_Mean'] - base
+
+        boutDF.loc[boutDF['Cell'] == cell, 'Baseline_Mean'] = boutDF.loc[boutDF['Cell'] == cell, 'Baseline_Mean'] - baseMean
+        boutDF.loc[boutDF['Cell'] == cell, 'Baseline_Max'] = boutDF.loc[boutDF['Cell'] == cell, 'Baseline_Max'] - baseMax
+        boutDF.loc[boutDF['Cell'] == cell, 'Baseline_Auc'] = boutDF.loc[boutDF['Cell'] == cell, 'Baseline_Auc'] - baseAuc
+
+    return boutDF

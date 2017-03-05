@@ -158,7 +158,7 @@ def plotTrials(trialMeans, time, base, duration, eventType, trials, f):
 
     return fig, ax
 
-def plotHeatTrials(heatData, eventType, base, duration, trials, fs, figsize=(5,5), seperate=False, vlim=False):
+def plotHeatTrials(heatData, eventType, base, duration, trials, fs, figsize=(5,5), seperate=False, vmin=-1.0, vmax=1.0):
     [row, col] = heatData.shape
 
     vlim=False
@@ -175,10 +175,54 @@ def plotHeatTrials(heatData, eventType, base, duration, trials, fs, figsize=(5,5
     line = 1.5
     colors = ('#BCBEC0', '#0070C0', '#BCBEC0', '#0070C0')
 
-    if vlim:
-        plt.pcolor(heatData, cmap=plt.cm.PiYG_r, linewidth=line, linestyle='solid', vmin=vlim[0], vmax=vlim[1])
-    else:
-        plt.pcolor(heatData, cmap=plt.cm.PiYG_r, linewidth=line, linestyle='solid')
+    plt.pcolor(heatData, cmap=plt.cm.PiYG_r, linewidth=line, linestyle='solid', vmin=vmin, vmax=vmax)
+
+    ax.set_yticks(np.linspace(0.5, row-0.5, 2))
+    ax.set_yticklabels(np.linspace(1, row, 2, dtype=int))
+    ax.set_ylim(0, row)
+
+    ax.invert_yaxis()
+    cbar = plt.colorbar(ax=ax)
+    cbar.set_label("Normalized dF/F")
+
+    ## labels
+    ax.set_xlabel('Time (sec)')
+    ax.set_ylabel('Cell # -or- Trial #')
+    ax.set_title(eventType)
+
+    ## decorate the axes
+    #ax.tick_params(axis='y', color= '#000000', width= line, direction='in', length= 4, which='major', pad=10)
+    #ax.tick_params(axis='x', color= '#000000', width= line, direction='in', length= 4, which='major', pad=12)
+    time_ax = np.arange(base, duration+0.001, 5.0)
+    ax.set_xticks(np.linspace(0, (-base+duration)/fs, len(time_ax)))
+    ax.set_xticklabels(time_ax)
+
+    ax.plot([-base/fs, -base/fs], list(ax.get_ylim()), 'w', linestyle='--', linewidth=line*1.2, alpha=1., zorder=111)
+
+    if seperate:
+        for i in np.arange(trials[0], trials[1]):
+            ax.plot([0, col],[i*row/trials[1], i*row/trials[1]], 'k', zorder=88)
+
+    return fig, ax
+
+def plotHeatTrialsNoV(heatData, eventType, base, duration, trials, fs, figsize=(5,5), seperate=False):
+    [row, col] = heatData.shape
+
+    vlim=False
+    plt.style.use('classic')
+    # Set the font dictionaries (for plot title and axis titles)
+    font = {'sans-serif' : 'Arial',
+            'weight' : 'normal',
+            'size'   : 18}
+    plt.rc('font', **font)
+
+    fig = plt.figure(figsize=figsize, facecolor="w", dpi= 150)
+    ax = plt.subplot(111)
+
+    line = 1.5
+    colors = ('#BCBEC0', '#0070C0', '#BCBEC0', '#0070C0')
+
+    plt.pcolor(heatData, cmap=plt.cm.PiYG_r, linewidth=line, linestyle='solid')
 
     ax.set_yticks(np.linspace(0.5, row-0.5, 2))
     ax.set_yticklabels(np.linspace(1, row, 2, dtype=int))

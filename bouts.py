@@ -6,6 +6,7 @@ from statistics import getBoutMeans, getStats
 
 def getBouts(mice, dataList, eventStart, eventEnd, baseEvent, base, behType, trials, baselining=False):
     """
+        Use this one for fixed baseline length.
     """
     eventsData = pd.DataFrame()
     for mus, sess in mice:
